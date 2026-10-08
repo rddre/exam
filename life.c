@@ -48,38 +48,6 @@ void afficher_grille(int largeur, int hauteur, char grille[hauteur][largeur])
 }
 
 /*
- * Compte le nombre de voisins vivants autour d'une cellule donnée.
- * On explore les 8 cases adjacentes autour de la position (ligne, colonne).
- */
-int compter_voisins(int largeur, int hauteur, char grille[hauteur][largeur], int ligne, int colonne)
-{
-	int nombre_voisins = 0;
-	int deplacement_ligne;
-	int deplacement_colonne;
-	int nouvelle_ligne;
-	int nouvelle_colonne;
-
-	deplacement_ligne = -1;
-	while (deplacement_ligne <= 1)
-	{
-		deplacement_colonne = -1;
-		while (deplacement_colonne <= 1)
-		{
-			nouvelle_ligne = ligne + deplacement_ligne;
-			nouvelle_colonne = colonne + deplacement_colonne;
-			if (!(deplacement_colonne == 0 && deplacement_ligne == 0)
-				&& nouvelle_ligne >= 0 && nouvelle_ligne < hauteur
-				&& nouvelle_colonne >= 0 && nouvelle_colonne < largeur
-				&& grille[nouvelle_ligne][nouvelle_colonne] == '0')
-				nombre_voisins++;
-			deplacement_colonne++;
-		}
-		deplacement_ligne++;
-	}
-	return (nombre_voisins);
-}
-
-/*
  * Programme principal.
  * Il lit les paramètres de la ligne de commande, traite les commandes du stylo,
  * puis applique les règles du jeu de la vie pendant le nombre d'itérations demandé.
@@ -162,11 +130,18 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	// generation
 	int generation;
 	int ligne;
 	int colonne;
 	int voisins;
 	char cellule;
+
+	// compter voisin
+	int deplacement_ligne;
+	int deplacement_colonne;
+	int nouvelle_ligne;
+	int nouvelle_colonne;
 
 	generation = 0;
 	while (generation < iterations)
@@ -177,7 +152,27 @@ int main(int argc, char *argv[])
 			colonne = 0;
 			while (colonne < largeur)
 			{
-				voisins = compter_voisins(largeur, hauteur, grille, ligne, colonne);
+				// compter voisin
+				voisins = 0;
+				deplacement_ligne = -1;
+				while (deplacement_ligne <= 1)
+				{
+					deplacement_colonne = -1;
+					while (deplacement_colonne <= 1)
+					{
+						nouvelle_ligne = ligne + deplacement_ligne;
+						nouvelle_colonne = colonne + deplacement_colonne;
+						if (!(deplacement_colonne == 0 && deplacement_ligne == 0)
+							&& nouvelle_ligne >= 0 && nouvelle_ligne < hauteur
+							&& nouvelle_colonne >= 0 && nouvelle_colonne < largeur
+							&& grille[nouvelle_ligne][nouvelle_colonne] == '0')
+							voisins++;
+						deplacement_colonne++;
+					}
+					deplacement_ligne++;
+				}
+
+				// regle de vie
 				cellule = grille[ligne][colonne];
 
 				if (cellule == '0' && voisins < 2)
@@ -195,6 +190,7 @@ int main(int argc, char *argv[])
 			ligne++;
 		}
 
+		// copier coller dans grille suivante
 		ligne = 0;
 		while (ligne < hauteur)
 		{
