@@ -1,212 +1,85 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-/*
- * Initialise toute la grille avec des cellules mortes.
- * Chaque case est remplie par le caractère espace.
- */
-void initialiser_grille(int largeur, int hauteur, char grille[hauteur][largeur])
+int main(int ac, char **av)
 {
-	int ligne;
-	int colonne;
+	if(ac != 4)
+		return(1);
 
-	ligne = 0;
-	while (ligne < hauteur)
+	int width = atoi(av[1]);
+	int height = atoi(av[2]);
+	int iteration = atoi(av[3]);
+
+	if(width <0 || height <0 || iteration <0)
+		return(1);
+
+	int x=1, y=1;
+	int pen =0;
+	int grid[2][height+2][width+2];
+	char c;
+
+	for(int b=0; b < 2; b++)
+		for(int i=0; i < height+2;i++)
+			for(int j=0; j <width +2; j++)
+				grid[b][i][j]=0;
+	
+	while(read(0, &c,1)>0)
 	{
-		colonne = 0;
-		while (colonne < largeur)
-		{
-			grille[ligne][colonne] = ' ';
-			colonne++;
-		}
-		ligne++;
-	}
-}
-
-/*
- * Affiche la grille dans le terminal.
- * Chaque ligne est imprimée puis un retour à la ligne est ajouté.
- */
-void afficher_grille(int largeur, int hauteur, char grille[hauteur][largeur])
-{
-	int ligne;
-	int colonne;
-
-	ligne = 0;
-	while (ligne < hauteur)
-	{
-		colonne = 0;
-		while (colonne < largeur)
-		{
-			putchar(grille[ligne][colonne]);
-			colonne++;
-		}
-		putchar('\n');
-		ligne++;
-	}
-}
-
-/*
- * Programme principal.
- * Il lit les paramètres de la ligne de commande, traite les commandes du stylo,
- * puis applique les règles du jeu de la vie pendant le nombre d'itérations demandé.
- */
-int main(int argc, char *argv[])
-{
-	int largeur;
-	int hauteur;
-	int iterations;
-	int stylo_x;
-	int stylo_y;
-	int stylo_levé;
-	char caractere;
-
-	if (argc != 4)
-	{
-		fprintf(stderr, "Usage: %s width height iterations\n", argv[0]);
-		return (1);
+		if(c=='w' && y >1)
+			y--;
+		
+		else if(c=='s' && y < height)
+			y++;
+		else if(c=='a' && x >1)
+			x--;
+		else if(c=='d' && x < width)
+			x++;
+		else if(c=='x')
+			pen= !pen;
+		if(pen)
+			grid[0][y][x]=1;
 	}
 
-	largeur = atoi(argv[1]);
-	hauteur = atoi(argv[2]);
-	iterations = atoi(argv[3]);
-	stylo_x = 0;
-	stylo_y = 0;
-	stylo_levé = 1;
-
-	if (largeur <= 0 || hauteur <= 0)
-		return (1);
-
-	char grille[hauteur][largeur];
-	char grille_suivante[hauteur][largeur];
-
-	initialiser_grille(largeur, hauteur, grille);
-	initialiser_grille(largeur, hauteur, grille_suivante);
-
-	while (read(0, &caractere, 1) > 0)
+	for(int it=0; it < iteration; it++)
 	{
-		if (caractere == 'w')
+		int cur = it%2;
+		int next = (it+1)%2;
+		for(int i= 1; i <= height; i++)
 		{
-			if (stylo_y > 0)
+			for(int j=1; j <= width; j++)
 			{
-				stylo_y--;
-				if (stylo_levé == 0)
-					grille[stylo_y][stylo_x] = '0';
-			}
-		}
-		else if (caractere == 'a')
-		{
-			if (stylo_x > 0)
-			{
-				stylo_x--;
-				if (stylo_levé == 0)
-					grille[stylo_y][stylo_x] = '0';
-			}
-		}
-		else if (caractere == 's')
-		{
-			if (stylo_y < hauteur - 1)
-			{
-				stylo_y++;
-				if (stylo_levé == 0)
-					grille[stylo_y][stylo_x] = '0';
-			}
-		}
-		else if (caractere == 'd')
-		{
-			if (stylo_x < largeur - 1)
-			{
-				stylo_x++;
-				if (stylo_levé == 0)
-					grille[stylo_y][stylo_x] = '0';
-			}
-		}
-		else if (caractere == 'x')
-		{
-			stylo_levé = !stylo_levé;
-			if (stylo_levé == 0)
-				grille[stylo_y][stylo_x] = '0';
-		}
-	}
-
-	// generation
-	int generation;
-	int ligne;
-	int colonne;
-	int voisins;
-	char cellule;
-
-	// compter voisin
-	int deplacement_ligne;
-	int deplacement_colonne;
-	int nouvelle_ligne;
-	int nouvelle_colonne;
-
-	generation = 0;
-	while (generation < iterations)
-	{
-		ligne = 0;
-		while (ligne < hauteur)
-		{
-			colonne = 0;
-			while (colonne < largeur)
-			{
-				// compter voisin
-				voisins = 0;
-				deplacement_ligne = -1;
-				while (deplacement_ligne <= 1)
+				int n=0;
+				for(int dy = -1; dy <=1; dy++)
 				{
-					deplacement_colonne = -1;
-					while (deplacement_colonne <= 1)
+					for(int dx= -1; dx <= 1; dx++)
 					{
-						nouvelle_ligne = ligne + deplacement_ligne;
-						nouvelle_colonne = colonne + deplacement_colonne;
-						if (!(deplacement_colonne == 0 && deplacement_ligne == 0)
-							&& nouvelle_ligne >= 0 && nouvelle_ligne < hauteur
-							&& nouvelle_colonne >= 0 && nouvelle_colonne < largeur
-							&& grille[nouvelle_ligne][nouvelle_colonne] == '0')
-							voisins++;
-						deplacement_colonne++;
+						if(dx != 0 || dy !=0)
+							n+= grid[cur][dy+i][dx+j];
 					}
-					deplacement_ligne++;
 				}
-
-				// regle de vie
-				cellule = grille[ligne][colonne];
-
-				if (cellule == '0' && voisins < 2)
-					grille_suivante[ligne][colonne] = ' ';
-				else if (cellule == '0' && (voisins == 2 || voisins == 3))
-					grille_suivante[ligne][colonne] = '0';
-				else if (cellule == '0' && voisins > 3)
-					grille_suivante[ligne][colonne] = ' ';
-				else if (cellule == ' ' && voisins == 3)
-					grille_suivante[ligne][colonne] = '0';
+				if(grid[cur][i][j]==1)
+					grid[next][i][j]= (n==2 || n==3);
 				else
-					grille_suivante[ligne][colonne] = grille[ligne][colonne];
-				colonne++;
-			}
-			ligne++;
-		}
+					grid[next][i][j]= (n==3);
 
-		// copier coller dans grille suivante
-		ligne = 0;
-		while (ligne < hauteur)
-		{
-			colonne = 0;
-			while (colonne < largeur)
-			{
-				grille[ligne][colonne] = grille_suivante[ligne][colonne];
-				colonne++;
 			}
-			ligne++;
 		}
-		generation++;
 	}
 
-	//printf("\n=== Simulation Result (%d iterations) ===\n", iterations);
-	afficher_grille(largeur, hauteur, grille);
+	int final= iteration %2;
 
-	return (0);
+	for(int i= 1; i <= height; i++)
+		{
+			for(int j=1; j <= width; j++)
+			{
+				if(grid[final][i][j])
+					putchar('O');
+
+				else
+					putchar(' ');
+			}
+		putchar('\n');
+		}
+		
 }
