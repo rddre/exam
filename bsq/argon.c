@@ -58,9 +58,7 @@ void bsq(FILE *file)
         return;
     }
 
-    int largeur = len;
-    if (line[len - 1] == '\n')
-        largeur--;
+    int largeur = len - 1;
     if (largeur == 0)
     {
         free(line);
