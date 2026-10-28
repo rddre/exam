@@ -23,13 +23,13 @@ void bsq(FILE *file)
 
     // check les var
 
-    // getline pour le \n a la fin
+    // getline pour le \n laisser par fscanf
 
     // lire la ligne 1
     int len = getline();
 
     // declarer largeur et check
-    int largeur = len;
+    int largeur = len - 1;
 
     // decalrer tab max size best y et x
 
